@@ -3,13 +3,13 @@ Module contaning Lanczos diagonalization algorithm
 
 """
 
-import nunpy as np
+import numpy as np
 from scipy.linalg import eigh_tridiagonal
 
 from typing import Tuple
 
 
-def lanczos_eig(A: np.ndarray, v0: np.ndarray, m: int) -> Tuple(np.ndarray, np.ndarray):
+def lanczos_eig(A: np.ndarray, v0: np.ndarray, m: int) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Finds the lowest m eigen values and eigen vectors of a symmetric array
 
@@ -45,18 +45,22 @@ def lanczos_eig(A: np.ndarray, v0: np.ndarray, m: int) -> Tuple(np.ndarray, np.n
     error = 1e-16
 
     for i in range(1,m,1):
-        v = Q[i-1,:]
+        v = Q[i-1,:] 
 
         Q[i,:] = r / b[i-1]
 
-        r = A @ Q[i,:] # |n>
+        r = A @ Q[i,:] # |n> 
 
-        r = r - b[i-1]*v
+        a[i] = (r.conj() @ Q[i,:] ) # real? 
 
-        a[i] = (Q[i,:] @ r) # real?
-        r = r - a[i]*Q[i,:]
+        r = r - a[i]*Q[i,:] - b[i-1]*v
 
         b[i] = np.linalg.norm(r)
+        
+        # addtitional steps to increase accuracy
+        d = Q[i,:].conj() @ r
+        r -= d*Q[i,:]
+        a += d
         
         if b[i] < error:
             m = i
